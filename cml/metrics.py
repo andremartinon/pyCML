@@ -8,7 +8,7 @@ from gpa import GPA
 from pathlib import Path
 from scipy.stats import describe, stats
 from skimage.measure import label
-from typing import List, Tuple
+from typing import List, Tuple, Sequence
 
 from .evolution import Evolution
 from .lattice import Lattice
@@ -19,9 +19,9 @@ from .animation import animate_gradient, create_gradient_animation
 
 class Metric(ABC):
 
-    def __init__(self, lattices: List[Lattice, ...] = None,
+    def __init__(self, lattices: Sequence[Lattice] = None,
                  metric_func=None,
-                 shape: Tuple[int, ...] = None,
+                 shape: Tuple[int, int] = None,
                  dtype: str = 'float64',
                  output_dir: Path = Path('/tmp/cml/'),
                  dataset_name: str = None):

@@ -5,17 +5,17 @@ from typing import Tuple
 
 class Lattice:
 
-    def __init__(self, shape: Tuple[int, ...]):
+    def __init__(self, shape: Tuple[int, int]):
         self.dimensions = 2
         self.shape = shape
         self.u = np.ndarray(shape)
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> Tuple[int, int]:
         return self._shape
 
     @shape.setter
-    def shape(self, shape: Tuple[int, ...]):
+    def shape(self, shape: Tuple[int, int]):
         self.dimensions: int = len(shape)
         self._shape = shape
 

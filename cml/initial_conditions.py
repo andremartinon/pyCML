@@ -8,7 +8,7 @@ from .lattice import Lattice
 
 class InitialCondition(ABC):
 
-    def __init__(self, shape: Tuple[int, ...] = (40, 40)):
+    def __init__(self, shape: Tuple[int, int] = (40, 40)):
         self.lattice = Lattice(shape)
         self.generate()
 
@@ -23,7 +23,7 @@ class InitialCondition(ABC):
 
 class RandomInitialCondition(InitialCondition):
 
-    def __init__(self, shape: Tuple[int, ...] = (40, 40), seed: int = None):
+    def __init__(self, shape: Tuple[int, int] = (40, 40), seed: int = None):
         self.seed = seed
         super().__init__(shape)
 
@@ -40,7 +40,7 @@ class RandomInitialCondition(InitialCondition):
 class GaussianInitialCondition(InitialCondition):
 
     def __init__(self,
-                 shape: Tuple[int, ...] = (40, 40),
+                 shape: Tuple[int, int] = (40, 40),
                  mu: float = 0.5,
                  sigma: float = 0.15):
         self.mu = mu
