@@ -31,6 +31,7 @@ class Evolution:
             evolution.output_dir = dataset_file.parent
             evolution.dataset_name = dataset_name
             evolution.dynamic_mode = False
+            evolution.grid_size = grid_size
 
             for snapshot in dataset:
                 lattice = Lattice(shape=(grid_size, grid_size))
@@ -52,6 +53,7 @@ class Evolution:
         self.dataset_name = dataset_name
         self.file_name = self.output_dir / self.dataset_name
         self.dynamic_mode = dynamic_mode
+        self.grid_size = cml.grid_size
 
         self.snapshots = list()
 
@@ -92,16 +94,20 @@ class Evolution:
 
         plot_four_lattices(self.snapshots, indexes, show=show,
                            file_name=file_name,
-                           binary_threshold=binary_threshold)
+                           binary_threshold=binary_threshold,
+                           dataset_name=self.dataset_name)
 
     def animate(self, show: bool = True, notebook: bool = False, fps: int = 4):
         if notebook:
-            animation = animate(self.snapshots, notebook=notebook, fps=fps)
+            animation = animate(self.snapshots, notebook=notebook, fps=fps,
+                                dataset_name=self.dataset_name)
             plt.close()
             return animation
 
         if show:
-            animate(self.snapshots, show=show, fps=fps)
+            animate(self.snapshots, show=show, fps=fps,
+                    dataset_name=self.dataset_name)
         else:
             create_animation(self.snapshots, fps=fps,
-                             file_name=self.file_name.with_suffix('.mp4'))
+                             file_name=self.file_name.with_suffix('.mp4'),
+                             dataset_name=self.dataset_name)

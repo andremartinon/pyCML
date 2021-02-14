@@ -1,4 +1,5 @@
 import gc
+import matplotlib.pyplot as plt
 import multiprocessing
 import numpy as np
 
@@ -8,7 +9,7 @@ from gpa import GPA
 from pathlib import Path
 from scipy.stats import describe, stats
 from skimage.measure import label
-from typing import List, Tuple, Sequence
+from typing import Tuple, Sequence
 
 from .evolution import Evolution
 from .lattice import Lattice
@@ -23,14 +24,15 @@ class Metric(ABC):
                  metric_func=None,
                  shape: Tuple[int, int] = None,
                  dtype: str = 'float64',
+                 dataset_name: str = None,
                  output_dir: Path = Path('/tmp/cml/'),
-                 dataset_name: str = None):
+                 file_name: str = None):
         self.lattices = lattices
         self.metrics = np.ndarray(shape, dtype=dtype)
         self.metric_func = metric_func
         self.output_dir = output_dir
         self.dataset_name = dataset_name
-        self.file_name = self.output_dir / self.dataset_name
+        self.file_name = self.output_dir / file_name
         self.columns = ''
 
     def measure(self, parallel: bool = True, *args, **kwargs):
@@ -70,6 +72,7 @@ class StatisticalMomentsMetric(Metric):
                          StatisticalMomentsMetric._work,
                          shape,
                          'float64',
+                         evolution.dataset_name,
                          evolution.output_dir,
                          evolution.dataset_name + '_statistical_moments')
         self.columns = 'skewness,kurtosis,variance'
@@ -86,25 +89,27 @@ class StatisticalMomentsMetric(Metric):
                                  self.metrics[:, 1],
                                  self.metrics[:, 2],
                                  show=show,
-                                 file_name=self.file_name.with_suffix('.png'))
+                                 file_name=self.file_name.with_suffix('.png'),
+                                 dataset_name=self.dataset_name)
 
 
 class GradientMetric(Metric):
 
     def __init__(self, evolution: Evolution = None):
-        shape = (evolution.iterations+1, 4, evolution.cml.grid_size,
-                 evolution.cml.grid_size)
+        shape = (evolution.iterations+1, 4, evolution.grid_size,
+                 evolution.grid_size)
 
         super().__init__(evolution.snapshots,
                          GradientMetric._work,
                          shape,
                          'float64',
+                         evolution.dataset_name,
                          evolution.output_dir,
                          evolution.dataset_name + '_gradient')
 
     @staticmethod
     def _work(lattice: np.ndarray):
-        v, u = np.gradient(lattice)
+        v, u = np.gradient(np.flip(lattice, 0))
         modulus = np.sqrt(u**2 + v**2)
         phases = np.arctan2(v, u)
 
@@ -113,10 +118,11 @@ class GradientMetric(Metric):
     def plot(self, index: int = 0, step: int = 2, show: bool = True):
         u = self.metrics[index, 0]
         v = self.metrics[index, 1]
-        file_name = self.file_name.name + f'_snapshots{index}'
+        file_name = self.file_name.name + f'_snapshot_{index}'
         file_name = self.file_name.with_name(file_name).with_suffix('.png')
 
-        plot_gradient(u, v, step, show, file_name=file_name)
+        plot_gradient(u, v, step, show, file_name=file_name,
+                      dataset_name=self.dataset_name, snapshot_number=index)
 
     def plot_four_gradients(self, step: int = 2, show: bool = True):
         size = len(self.metrics)
@@ -138,23 +144,36 @@ class GradientMetric(Metric):
                             indexes,
                             step,
                             show=show,
-                            file_name=self.file_name.with_suffix('.png'))
+                            file_name=self.file_name.with_suffix('.png'),
+                            dataset_name=self.dataset_name)
 
-    def animate(self, fps: int = 4, step: int = 2, show: bool = True):
-        file_name = self.file_name.with_suffix('.mp4')
+    def animate(self, notebook: bool = False, fps: int = 4, step: int = 2,
+                show: bool = True):
+        if notebook:
+            animation = animate_gradient(self.metrics[:, 0],
+                                         self.metrics[:, 1],
+                                         notebook=notebook,
+                                         fps=fps,
+                                         step=step,
+                                         dataset_name=self.dataset_name)
+            plt.close()
+            return animation
+
         if show:
             animate_gradient(self.metrics[:, 0],
                              self.metrics[:, 1],
                              fps=fps,
                              step=step,
                              show=show,
-                             file_name=file_name)
+                             dataset_name=self.dataset_name)
         else:
+            file_name = self.file_name.with_suffix('.mp4')
             create_gradient_animation(self.metrics[:, 0],
                                       self.metrics[:, 1],
                                       fps=fps,
                                       step=step,
-                                      file_name=file_name)
+                                      file_name=file_name,
+                                      dataset_name=self.dataset_name)
 
     def save(self):
         for data, name in [(self.metrics[:, 0], 'u'),
@@ -178,6 +197,7 @@ class EntropyMetric(Metric):
                          EntropyMetric._work,
                          shape,
                          'float64',
+                         evolution.dataset_name,
                          evolution.output_dir,
                          evolution.dataset_name + '_entropy')
 
@@ -209,7 +229,8 @@ class EntropyMetric(Metric):
                      phases,
                      lattices,
                      show=show,
-                     file_name=self.file_name.with_suffix('.png'))
+                     file_name=self.file_name.with_suffix('.png'),
+                     dataset_name=self.dataset_name)
 
 
 class EulerCharacteristicMetric(Metric):
@@ -220,6 +241,7 @@ class EulerCharacteristicMetric(Metric):
                          EulerCharacteristicMetric._work,
                          shape,
                          'float64',
+                         evolution.dataset_name,
                          evolution.output_dir,
                          evolution.dataset_name + '_euler_characteristic')
         self.columns = 'gamma,chi'
@@ -277,7 +299,8 @@ class EulerCharacteristicMetric(Metric):
         plot_euler_characteristic(gammas,
                                   chi_gammas,
                                   show=show,
-                                  file_name=self.file_name.with_suffix('.png'))
+                                  file_name=self.file_name.with_suffix('.png'),
+                                  dataset_name=self.dataset_name)
 
 
 class GPAMetric(Metric):
@@ -288,6 +311,7 @@ class GPAMetric(Metric):
                          GPAMetric._work,
                          shape,
                          'float64',
+                         evolution.dataset_name,
                          evolution.output_dir,
                          evolution.dataset_name + '_gpa')
         self.columns = 'G1,G2,G3,G4'
@@ -312,4 +336,5 @@ class GPAMetric(Metric):
         g4 = self.metrics[:, 3]
 
         plot_gpa(g1, g2, g3, g4, show=show,
-                 file_name=self.file_name.with_suffix('.png'))
+                 file_name=self.file_name.with_suffix('.png'),
+                 dataset_name=self.dataset_name)

@@ -18,7 +18,8 @@ def animate(snapshots: List[Lattice],
             fps: int = 4,
             start: int = 0,
             show: bool = True,
-            notebook: bool = False):
+            notebook: bool = False,
+            dataset_name: str = ''):
 
     mpl.rcParams["mpl_toolkits.legacy_colorbar"] = False
 
@@ -37,6 +38,14 @@ def animate(snapshots: List[Lattice],
                     vmax=1.0,
                     extent=[1, grid_size,
                             grid_size, 1])
+
+    fig.text(0.99,
+             0.99,
+             f'[{dataset_name}]',
+             horizontalalignment='right',
+             verticalalignment='top')
+
+    fig.suptitle(f'CML Evolution')
 
     ticks = np.linspace(1, grid_size, 3, dtype='int64')
     plt.xticks(ticks)
@@ -75,7 +84,8 @@ def animate(snapshots: List[Lattice],
 
 def create_animation(snapshots: List[Lattice],
                      file_name: Path = None,
-                     fps: int = 4):
+                     fps: int = 4,
+                     dataset_name: str = ''):
 
     output_dir = Path(f'/tmp/cml_animation_{file_name.with_suffix("").name}')
     create_output_dir(output_dir, clean=True)
@@ -95,7 +105,8 @@ def create_animation(snapshots: List[Lattice],
                                                     f'chunk_{i}.mp4'),
                                          start=start_snapshot,
                                          fps=fps,
-                                         show=False)
+                                         show=False,
+                                         dataset_name=dataset_name)
                 start_snapshot = start_snapshot + chunk.shape[0]
                 f.write(f'file chunk_{i}.mp4\n')
                 future.sid = f'chunk_{i}.mp4'
@@ -122,9 +133,14 @@ def animate_gradient(u: List[np.ndarray],
                      start: int = 0,
                      step: int = 2,
                      show: bool = True,
-                     file_name: Path = None):
+                     file_name: Path = None,
+                     notebook: bool = False,
+                     dataset_name: str = ''):
 
-    fig = plt.figure(figsize=(12.8, 7.2))
+    if notebook:
+        fig = plt.figure(figsize=(6.4, 3.6))
+    else:
+        fig = plt.figure(figsize=(12.8, 7.2))
 
     grid_size = u[0].shape[0]
     x, y = np.meshgrid(np.arange(0, grid_size, 1),
@@ -136,7 +152,15 @@ def animate_gradient(u: List[np.ndarray],
     plt.gca().set_aspect('equal')
 
     plt.xlim(-step, grid_size)
-    plt.ylim(grid_size, -step)
+    plt.ylim(-step, grid_size)
+
+    fig.text(0.99,
+             0.99,
+             f'[{dataset_name}]',
+             horizontalalignment='right',
+             verticalalignment='top')
+
+    fig.suptitle(f'CML Evolution - Gradient Field')
 
     ticks = np.linspace(-step, grid_size, 3, dtype='int64')
     plt.xticks(ticks)
@@ -158,6 +182,9 @@ def animate_gradient(u: List[np.ndarray],
         interval=1000/fps
     )
 
+    if notebook:
+        return anim.to_jshtml(fps=fps)
+
     if show:
         plt.show()
     else:
@@ -172,7 +199,8 @@ def create_gradient_animation(u: List[np.ndarray],
                               v: List[np.ndarray],
                               fps: int = 4,
                               step: int = 2,
-                              file_name: Path = None):
+                              file_name: Path = None,
+                              dataset_name: str = ''):
 
     output_dir = Path(
         f'/tmp/cml_gradient_animation_{file_name.with_suffix("").name}')
@@ -197,7 +225,8 @@ def create_gradient_animation(u: List[np.ndarray],
                                          step=step,
                                          show=False,
                                          file_name=(output_dir /
-                                                    f'chunk_{i}.mp4'))
+                                                    f'chunk_{i}.mp4'),
+                                         dataset_name=dataset_name)
 
                 start_snapshot = start_snapshot + u_chunk.shape[0]
                 f.write(f'file chunk_{i}.mp4\n')
