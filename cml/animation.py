@@ -72,7 +72,7 @@ def animate(snapshots: List[Lattice],
     if notebook:
         fig.subplots_adjust(top=0.85, bottom=0.1, left=0.4, right=0.99,
                             hspace=0.15, wspace=0.1)
-        plt.rcParams['animation.embed_limit'] = 40
+
         return anim.to_jshtml(fps=fps)
 
     if show:
@@ -192,7 +192,6 @@ def animate_gradient(u: List[np.ndarray],
     )
 
     if notebook:
-        plt.rcParams['animation.embed_limit'] = 40
         return anim.to_jshtml(fps=fps)
 
     if show:

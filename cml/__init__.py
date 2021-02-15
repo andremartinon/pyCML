@@ -11,7 +11,7 @@ from .metrics import StatisticalMomentsMetric, GradientMetric, EntropyMetric,\
 from .utils import create_output_dir
 from .plot import plot_lattice
 
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 
 __all__ = [
