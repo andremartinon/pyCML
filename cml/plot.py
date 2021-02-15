@@ -94,7 +94,8 @@ def plot_four_lattices(snapshots: List[Lattice],
                        show: bool = True,
                        file_name: Path = None,
                        binary_threshold = None,
-                       dataset_name: str = ''):
+                       dataset_name: str = '',
+                       cml_config: str = ''):
 
     mpl.rcParams["mpl_toolkits.legacy_colorbar"] = False
 
@@ -128,11 +129,14 @@ def plot_four_lattices(snapshots: List[Lattice],
     ax.cax.colorbar(im)
     ax.cax.toggle_label(True)
 
-    fig.text(0.99,
-             0.99,
-             f'[{dataset_name}]',
-             horizontalalignment='right',
+    fig.text(0.01,
+             0.9,
+             f'[{dataset_name}]\n{cml_config}',
+             horizontalalignment='left',
              verticalalignment='top')
+
+    fig.subplots_adjust(top=0.9, bottom=0.1, left=0.3, right=0.94,
+                        hspace=0.15, wspace=0.1)
 
     if binary_threshold is None:
         fig.suptitle(f'CML Evolution')
@@ -188,12 +192,13 @@ def plot_statistical_moments(skewness: np.ndarray,
 
 def plot_gradient(u: np.ndarray, v: np.ndarray, step: int = 2,
                   show: bool = True, file_name: Path = None,
-                  dataset_name: str = '', snapshot_number: int = None):
+                  dataset_name: str = '', snapshot_number: int = None,
+                  cml_config: str = ''):
 
     x, y = np.meshgrid(np.arange(0, u.shape[1], 1),
                        np.arange(0, v.shape[0], 1))
 
-    fig, ax = plt.subplots(figsize=(7, 7))
+    fig, ax = plt.subplots(figsize=(11.7, 8.3))
     ax.quiver(x[::step, ::step], y[::step, ::step],
               u[::step, ::step], v[::step, ::step],
               units='y', pivot='mid')
@@ -204,13 +209,17 @@ def plot_gradient(u: np.ndarray, v: np.ndarray, step: int = 2,
     ticks = np.linspace(-step, u.shape[0], 3, dtype='int64')
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
+    ax.set_aspect('equal', adjustable='box')
 
     fig.suptitle(f'Gradient Field - Snapshot {snapshot_number}')
-    fig.text(0.99,
-             0.99,
-             f'[{dataset_name}]',
-             horizontalalignment='right',
+    fig.text(0.01,
+             0.9,
+             f'[{dataset_name}]\n{cml_config}',
+             horizontalalignment='left',
              verticalalignment='top')
+
+    fig.subplots_adjust(top=0.9, bottom=0.1, left=0.3, right=0.99,
+                        hspace=0.15, wspace=0.1)
 
     if show:
         plt.show()
@@ -225,7 +234,8 @@ def plot_four_gradients(u: List[np.ndarray],
                         step: int = 2,
                         show: bool = True,
                         file_name: Path = None,
-                        dataset_name: str = ''):
+                        dataset_name: str = '',
+                        cml_config: str = ''):
 
     fig = plt.figure(figsize=(11.7, 8.3))
 
@@ -252,11 +262,14 @@ def plot_four_gradients(u: List[np.ndarray],
         ax.set_title(f'Snapshot {indexes[i]}')
 
     fig.suptitle(f'CML Evolution - Gradient Field')
-    fig.text(0.99,
-             0.99,
-             f'[{dataset_name}]',
-             horizontalalignment='right',
+    fig.text(0.01,
+             0.9,
+             f'[{dataset_name}]\n{cml_config}',
+             horizontalalignment='left',
              verticalalignment='top')
+
+    fig.subplots_adjust(top=0.9, bottom=0.1, left=0.3, right=0.94,
+                        hspace=0.15, wspace=0.1)
 
     if show:
         plt.show()

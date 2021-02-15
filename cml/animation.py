@@ -19,7 +19,8 @@ def animate(snapshots: List[Lattice],
             start: int = 0,
             show: bool = True,
             notebook: bool = False,
-            dataset_name: str = ''):
+            dataset_name: str = '',
+            cml_config: str = ''):
 
     mpl.rcParams["mpl_toolkits.legacy_colorbar"] = False
 
@@ -39,10 +40,10 @@ def animate(snapshots: List[Lattice],
                     extent=[1, grid_size,
                             grid_size, 1])
 
-    fig.text(0.99,
-             0.99,
-             f'[{dataset_name}]',
-             horizontalalignment='right',
+    fig.text(0.01,
+             0.88,
+             f'[{dataset_name}]\n{cml_config}',
+             horizontalalignment='left',
              verticalalignment='top')
 
     fig.suptitle(f'CML Evolution')
@@ -85,7 +86,8 @@ def animate(snapshots: List[Lattice],
 def create_animation(snapshots: List[Lattice],
                      file_name: Path = None,
                      fps: int = 4,
-                     dataset_name: str = ''):
+                     dataset_name: str = '',
+                     cml_config: str = ''):
 
     output_dir = Path(f'/tmp/cml_animation_{file_name.with_suffix("").name}')
     create_output_dir(output_dir, clean=True)
@@ -106,7 +108,8 @@ def create_animation(snapshots: List[Lattice],
                                          start=start_snapshot,
                                          fps=fps,
                                          show=False,
-                                         dataset_name=dataset_name)
+                                         dataset_name=dataset_name,
+                                         cml_config=cml_config)
                 start_snapshot = start_snapshot + chunk.shape[0]
                 f.write(f'file chunk_{i}.mp4\n')
                 future.sid = f'chunk_{i}.mp4'
@@ -116,7 +119,7 @@ def create_animation(snapshots: List[Lattice],
             _ = future.result()
             print(f'#{future.sid} successfully generated!')
 
-    subprocess.call(['/usr/bin/ffmpeg',
+    subprocess.call(['/usr/local/bin/ffmpeg',
                      '-f',
                      'concat',
                      '-i',
@@ -135,7 +138,8 @@ def animate_gradient(u: List[np.ndarray],
                      show: bool = True,
                      file_name: Path = None,
                      notebook: bool = False,
-                     dataset_name: str = ''):
+                     dataset_name: str = '',
+                     cml_config: str = ''):
 
     if notebook:
         fig = plt.figure(figsize=(6.4, 3.6))
@@ -154,13 +158,15 @@ def animate_gradient(u: List[np.ndarray],
     plt.xlim(-step, grid_size)
     plt.ylim(-step, grid_size)
 
-    fig.text(0.99,
-             0.99,
-             f'[{dataset_name}]',
-             horizontalalignment='right',
+    fig.text(0.01,
+             0.88,
+             f'[{dataset_name}]\n{cml_config}',
+             horizontalalignment='left',
              verticalalignment='top')
 
     fig.suptitle(f'CML Evolution - Gradient Field')
+    fig.subplots_adjust(top=0.9, bottom=0.1, left=0.3, right=0.99,
+                        hspace=0.15, wspace=0.1)
 
     ticks = np.linspace(-step, grid_size, 3, dtype='int64')
     plt.xticks(ticks)
@@ -200,7 +206,8 @@ def create_gradient_animation(u: List[np.ndarray],
                               fps: int = 4,
                               step: int = 2,
                               file_name: Path = None,
-                              dataset_name: str = ''):
+                              dataset_name: str = '',
+                              cml_config: str = ''):
 
     output_dir = Path(
         f'/tmp/cml_gradient_animation_{file_name.with_suffix("").name}')
@@ -226,7 +233,8 @@ def create_gradient_animation(u: List[np.ndarray],
                                          show=False,
                                          file_name=(output_dir /
                                                     f'chunk_{i}.mp4'),
-                                         dataset_name=dataset_name)
+                                         dataset_name=dataset_name,
+                                         cml_config=cml_config)
 
                 start_snapshot = start_snapshot + u_chunk.shape[0]
                 f.write(f'file chunk_{i}.mp4\n')
@@ -237,7 +245,7 @@ def create_gradient_animation(u: List[np.ndarray],
             _ = future.result()
             print(f'#{future.sid} successfully generated!')
 
-    subprocess.call(['/usr/bin/ffmpeg',
+    subprocess.call(['/usr/local/bin/ffmpeg',
                      '-f',
                      'concat',
                      '-i',

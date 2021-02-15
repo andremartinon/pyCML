@@ -35,7 +35,7 @@ class SteadyBoundaryCondition(BoundaryCondition):
 
     @constant_value.setter
     def constant_value(self, value: float):
-        assert 0 <= value <= 1, ('The constant boundary value '
+        assert 0 <= value <= 1, ('The steady boundary value '
                                  'must be between 0 and 1.')
         self._constant_value = value
 
@@ -56,7 +56,7 @@ class SteadyBoundaryCondition(BoundaryCondition):
         return self.lattice
 
     def __str__(self) -> str:
-        return f'Constant Boundary Condition: value={self.constant_value}'
+        return f'Steady Boundary Condition: value={self.constant_value}'
 
 
 class ToroidalBoundaryCondition(BoundaryCondition):

@@ -74,3 +74,12 @@ class CML:
         self.lattice = self.coupling.apply(
             self.bc.apply(
                 self.mapping.apply(self.lattice)), with_boundaries=False)
+
+    def __str__(self):
+        return '\n'.join([
+            f'Grid size: {self.grid_size} x {self.grid_size}',
+            str(self.ic),
+            str(self.bc),
+            str(self.mapping),
+            str(self.coupling)
+        ])

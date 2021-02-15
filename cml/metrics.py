@@ -26,7 +26,8 @@ class Metric(ABC):
                  dtype: str = 'float64',
                  dataset_name: str = None,
                  output_dir: Path = Path('/tmp/cml/'),
-                 file_name: str = None):
+                 file_name: str = None,
+                 cml_config: str = ''):
         self.lattices = lattices
         self.metrics = np.ndarray(shape, dtype=dtype)
         self.metric_func = metric_func
@@ -34,6 +35,7 @@ class Metric(ABC):
         self.dataset_name = dataset_name
         self.file_name = self.output_dir / file_name
         self.columns = ''
+        self.cml_config = cml_config
 
     def measure(self, parallel: bool = True, *args, **kwargs):
         if parallel:
@@ -74,7 +76,8 @@ class StatisticalMomentsMetric(Metric):
                          'float64',
                          evolution.dataset_name,
                          evolution.output_dir,
-                         evolution.dataset_name + '_statistical_moments')
+                         evolution.dataset_name + '_statistical_moments',
+                         str(evolution))
         self.columns = 'skewness,kurtosis,variance'
 
     @staticmethod
@@ -105,7 +108,8 @@ class GradientMetric(Metric):
                          'float64',
                          evolution.dataset_name,
                          evolution.output_dir,
-                         evolution.dataset_name + '_gradient')
+                         evolution.dataset_name + '_gradient',
+                         str(evolution))
 
     @staticmethod
     def _work(lattice: np.ndarray):
@@ -122,7 +126,8 @@ class GradientMetric(Metric):
         file_name = self.file_name.with_name(file_name).with_suffix('.png')
 
         plot_gradient(u, v, step, show, file_name=file_name,
-                      dataset_name=self.dataset_name, snapshot_number=index)
+                      dataset_name=self.dataset_name, snapshot_number=index,
+                      cml_config=self.cml_config)
 
     def plot_four_gradients(self, step: int = 2, show: bool = True):
         size = len(self.metrics)
@@ -145,7 +150,8 @@ class GradientMetric(Metric):
                             step,
                             show=show,
                             file_name=self.file_name.with_suffix('.png'),
-                            dataset_name=self.dataset_name)
+                            dataset_name=self.dataset_name,
+                            cml_config=self.cml_config)
 
     def animate(self, notebook: bool = False, fps: int = 4, step: int = 2,
                 show: bool = True):
@@ -155,7 +161,8 @@ class GradientMetric(Metric):
                                          notebook=notebook,
                                          fps=fps,
                                          step=step,
-                                         dataset_name=self.dataset_name)
+                                         dataset_name=self.dataset_name,
+                                         cml_config=self.cml_config)
             plt.close()
             return animation
 
@@ -165,7 +172,8 @@ class GradientMetric(Metric):
                              fps=fps,
                              step=step,
                              show=show,
-                             dataset_name=self.dataset_name)
+                             dataset_name=self.dataset_name,
+                             cml_config=self.cml_config)
         else:
             file_name = self.file_name.with_suffix('.mp4')
             create_gradient_animation(self.metrics[:, 0],
@@ -173,7 +181,8 @@ class GradientMetric(Metric):
                                       fps=fps,
                                       step=step,
                                       file_name=file_name,
-                                      dataset_name=self.dataset_name)
+                                      dataset_name=self.dataset_name,
+                                      cml_config=self.cml_config)
 
     def save(self):
         for data, name in [(self.metrics[:, 0], 'u'),
@@ -199,7 +208,8 @@ class EntropyMetric(Metric):
                          'float64',
                          evolution.dataset_name,
                          evolution.output_dir,
-                         evolution.dataset_name + '_entropy')
+                         evolution.dataset_name + '_entropy',
+                         str(evolution))
 
         self.columns = 'lattices,modulus,phases'
 
@@ -243,7 +253,8 @@ class EulerCharacteristicMetric(Metric):
                          'float64',
                          evolution.dataset_name,
                          evolution.output_dir,
-                         evolution.dataset_name + '_euler_characteristic')
+                         evolution.dataset_name + '_euler_characteristic',
+                         str(evolution))
         self.columns = 'gamma,chi'
 
     @staticmethod
@@ -313,7 +324,8 @@ class GPAMetric(Metric):
                          'float64',
                          evolution.dataset_name,
                          evolution.output_dir,
-                         evolution.dataset_name + '_gpa')
+                         evolution.dataset_name + '_gpa',
+                         str(evolution))
         self.columns = 'G1,G2,G3,G4'
 
     @staticmethod

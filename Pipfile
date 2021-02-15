@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 numpy = "*"
 matplotlib = "*"
-scikit-image = "*"
+scikit-image = "==0.17.2"
 scipy = "*"
 colorednoise = "*"
 

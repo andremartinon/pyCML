@@ -95,19 +95,30 @@ class Evolution:
         plot_four_lattices(self.snapshots, indexes, show=show,
                            file_name=file_name,
                            binary_threshold=binary_threshold,
-                           dataset_name=self.dataset_name)
+                           dataset_name=self.dataset_name,
+                           cml_config=str(self))
 
     def animate(self, show: bool = True, notebook: bool = False, fps: int = 4):
         if notebook:
             animation = animate(self.snapshots, notebook=notebook, fps=fps,
-                                dataset_name=self.dataset_name)
+                                dataset_name=self.dataset_name,
+                                cml_config=str(self))
             plt.close()
             return animation
 
         if show:
             animate(self.snapshots, show=show, fps=fps,
-                    dataset_name=self.dataset_name)
+                    dataset_name=self.dataset_name, cml_config=str(self))
         else:
             create_animation(self.snapshots, fps=fps,
                              file_name=self.file_name.with_suffix('.mp4'),
-                             dataset_name=self.dataset_name)
+                             dataset_name=self.dataset_name,
+                             cml_config=str(self))
+
+    def __str__(self):
+        if self.dynamic_mode:
+            return f'Iterations: {str(self.iterations)}\n{str(self.cml)}'
+
+        else:
+            return (f'Iterations: {str(self.iterations)}\n'
+                    f'Grid size: {self.grid_size} x {self.grid_size}')
